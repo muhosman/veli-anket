@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bir Sonraki Veli Toplantımızda Ne Konuşalım?</title>
+<meta name="description" content="Bir sonraki veli toplantısında konuşmak istediğiniz konuyu seçin.">
+<meta name="theme-color" content="#F4C152">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #26324A; --ink-soft: #4E5870; --cream: #FFF8EF; --sand: #F5EADB; --card: #FFFDF8;
+    --coral: #B8471F; --teal: #26736F; --teal-soft: #CDE7E3; --sun: #F4C152; --sun-soft: #FCE3A6;
+    --radius: 24px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Nunito', Arial, sans-serif; color: var(--ink); background: var(--cream);
+    min-height: 100vh; line-height: 1.45; -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 100% 0%, var(--sun-soft) 0 220px, transparent 221px),
+      radial-gradient(circle at 0% 100%, var(--teal-soft) 0 180px, transparent 181px);
+    background-attachment: fixed;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; padding: max(20px, env(safe-area-inset-top)) 18px calc(32px + env(safe-area-inset-bottom)); }
+  header { text-align: center; padding: 8px 0 4px; }
+  .art { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto -6px; }
+  .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: 2px; color: var(--coral); text-transform: uppercase; margin: 0 0 6px; }
+  h1 { font-size: clamp(26px, 6.4vw, 40px); font-weight: 900; line-height: 1.12; margin: 0 0 10px; }
+  .lead { font-size: clamp(16px, 4vw, 19px); color: var(--ink-soft); margin: 0 auto; max-width: 520px; }
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: 0 10px 30px rgba(38,50,74,.10); padding: clamp(18px, 5vw, 32px); margin-top: 22px; }
+  fieldset { border: 0; margin: 0; padding: 0; }
+  legend { font-size: 20px; font-weight: 900; margin-bottom: 4px; padding: 0; }
+  .hint { font-size: 15px; color: var(--ink-soft); margin: 0 0 16px; }
+  .options { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 560px) { .options { grid-template-columns: 1fr 1fr; } }
+  .opt { position: relative; }
+  .opt input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .opt label {
+    display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 12px 16px;
+    border-radius: 18px; background: var(--sand); border: 2px solid transparent;
+    font-size: 17px; font-weight: 700; cursor: pointer; user-select: none;
+    transition: background .15s, border-color .15s, transform .1s;
+  }
+  .opt label:active { transform: scale(.98); }
+  .box { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--ink-soft); background: #fff; display: grid; place-items: center; }
+  .box svg { width: 16px; height: 16px; opacity: 0; }
+  .opt input:checked + label { background: var(--teal-soft); border-color: var(--teal); }
+  .opt input:checked + label .box { background: var(--teal); border-color: var(--teal); }
+  .opt input:checked + label .box svg { opacity: 1; }
+  .opt input:focus-visible + label { outline: 3px solid var(--coral); outline-offset: 2px; }
+  .note-label { display: block; font-size: 18px; font-weight: 900; margin: 22px 0 6px; }
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical; border-radius: 16px; border: 2px solid var(--sand);
+    background: #fff; padding: 12px 14px; font: inherit; font-size: 16px; color: var(--ink);
+  }
+  textarea:focus { outline: none; border-color: var(--teal); }
+  .count { font-size: 13px; color: var(--ink-soft); text-align: right; margin-top: 4px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 58px;
+    margin-top: 18px; border: 0; border-radius: 18px; background: var(--coral); color: var(--cream);
+    font: inherit; font-size: 19px; font-weight: 900; cursor: pointer; transition: filter .15s, transform .1s;
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: scale(.99); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; }
+  .btn.ghost { background: transparent; color: var(--teal); border: 2px solid var(--teal); }
+  .msg { font-size: 15px; margin: 12px 0 0; min-height: 1em; }
+  .msg.err { color: var(--coral); font-weight: 700; }
+  .thanks { text-align: center; }
+  .thanks .big { font-size: 46px; line-height: 1; margin: 0 0 6px; }
+  .thanks h2 { font-size: 26px; font-weight: 900; margin: 0 0 6px; }
+  .results h2 { font-size: 22px; font-weight: 900; margin: 0 0 4px; }
+  .bar-row { margin-top: 14px; }
+  .bar-top { display: flex; justify-content: space-between; gap: 12px; font-size: 16px; font-weight: 700; }
+  .bar-top .n { color: var(--ink-soft); white-space: nowrap; }
+  .track { height: 14px; border-radius: 8px; background: var(--sand); overflow: hidden; margin-top: 6px; }
+  .fill { height: 100%; border-radius: 8px; background: var(--teal); width: 0; transition: width .6s cubic-bezier(.2,.7,.2,1); }
+  .bar-row.top .fill { background: var(--coral); }
+  .hidden { display: none !important; }
+  footer { text-align: center; font-size: 13px; color: var(--ink-soft); margin-top: 22px; }
+  .spinner { width: 20px; height: 20px; border-radius: 50%; border: 3px solid rgba(255,248,239,.4); border-top-color: var(--cream); animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <img class="art" src="assets/cocuklar.svg" alt="El ele tutuşmuş, gülümseyen çocuklar çizimi" width="1600" height="500">
+    <p class="eyebrow">Veli Toplantısı · Konu Anketi</p>
+    <h1>Bir sonraki toplantımızda ne konuşalım?</h1>
+    <p class="lead">Sizin için en önemli konuları seçin. Oylamanın sonunda en çok seçilen konuyu birlikte konuşacağız.</p>
+  </header>
+
+  <section id="formCard" class="card">
+    <form id="form" novalidate>
+      <fieldset>
+        <legend>Hangi konuları konuşmak istersiniz?</legend>
+        <p class="hint">Birden fazla seçebilirsiniz.</p>
+        <div class="options" id="options"></div>
+      </fieldset>
+      <label class="note-label" for="note">Aklınızda başka bir konu ya da soru var mı? <span style="font-weight:400;color:var(--ink-soft)">(isteğe bağlı)</span></label>
+      <textarea id="note" maxlength="300" placeholder="Örneğin: Çocuğum yemek seçiyor, ne yapabilirim?"></textarea>
+      <div class="count"><span id="count">0</span>/300</div>
+      <button class="btn" id="submit" type="submit">Oyumu gönder</button>
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section id="thanksCard" class="card thanks hidden" aria-live="polite">
+    <p class="big" aria-hidden="true">🎉</p>
+    <h2>Teşekkür ederiz!</h2>
+    <p class="lead">Oyunuz kaydedildi. Görüşleriniz bir sonraki toplantımızı şekillendirecek.</p>
+  </section>
+
+  <section id="resultsCard" class="card results">
+    <h2>Şu ana kadarki sonuçlar</h2>
+    <p class="hint" id="total">Sonuçlar yükleniyor…</p>
+    <div id="bars"></div>
+    <button class="btn ghost" id="refresh" type="button">Sonuçları yenile</button>
+  </section>
+
+  <footer>Yanıtlar isimsiz toplanır. Ad, e-posta ya da telefon bilgisi istenmez.</footer>
+</main>
+
+<script>
+  // Google Apps Script web uygulaması adresi
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbySIFAsrdKnfvNcyHhddhLcIA8npfDrypZxrJqUuuqQ-QQs0-7apKPtD6Uy0hjdum_N/exec";
+  const TOPICS = [
+    'Ekran süresi ve teknoloji',
+    'Uyku ve yemek rutinleri',
+    'Kardeş kıskançlığı',
+    'Öfke ve duyguları yönetme',
+    'Tuvalet eğitimi',
+    'Okula uyum ve ayrılık kaygısı',
+    'Oyunun gelişimdeki önemi'
+  ];
+  const VOTED_KEY = 'veli-anket-oy-verildi';
+  const $ = (id) => document.getElementById(id);
+  const check = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" stroke="#FFF8EF" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  // seçenekleri oluştur
+  TOPICS.forEach((t, i) => {
+    const d = document.createElement('div');
+    d.className = 'opt';
+    const inp = document.createElement('input');
+    inp.type = 'checkbox'; inp.id = 't' + i; inp.value = t; inp.name = 'topic';
+    const lab = document.createElement('label');
+    lab.htmlFor = inp.id;
+    lab.innerHTML = '<span class="box">' + check + '</span>';
+    const txt = document.createElement('span'); txt.textContent = t;
+    lab.appendChild(txt);
+    d.append(inp, lab);
+    $('options').appendChild(d);
+  });
+
+  $('note').addEventListener('input', () => { $('count').textContent = $('note').value.length; });
+
+  function renderResults(res) {
+    const bars = $('bars');
+    bars.textContent = '';
+    if (!res || !res.counts) { $('total').textContent = 'Sonuçlar şu anda gösterilemiyor.'; return; }
+    const total = res.total || 0;
+    $('total').textContent = total === 0 ? 'Henüz oy yok. İlk oyu siz verin!' : total + ' veli oy verdi.';
+    const entries = TOPICS.map(t => [t, res.counts[t] || 0]).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...entries.map(e => e[1]));
+    entries.forEach(([t, n], idx) => {
+      const row = document.createElement('div');
+      row.className = 'bar-row' + (idx === 0 && n > 0 ? ' top' : '');
+      const top = document.createElement('div'); top.className = 'bar-top';
+      const a = document.createElement('span'); a.textContent = (idx === 0 && n > 0 ? '★ ' : '') + t;
+      const b = document.createElement('span'); b.className = 'n';
+      const pct = total ? Math.round(n * 100 / total) : 0;
+      b.textContent = n + ' oy · %' + pct;
+      top.append(a, b);
+      const track = document.createElement('div'); track.className = 'track';
+      const fill = document.createElement('div'); fill.className = 'fill';
+      track.appendChild(fill);
+      row.append(top, track);
+      bars.appendChild(row);
+      requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = (n / max * 100) + '%'; }));
+    });
+  }
+
+  async function loadResults() {
+    $('refresh').disabled = true;
+    try {
+      const r = await fetch(ENDPOINT, { method: 'GET' });
+      const j = await r.json();
+      renderResults(j.results);
+    } catch (e) {
+      $('total').textContent = 'Sonuçlar yüklenemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.';
+    } finally {
+      $('refresh').disabled = false;
+    }
+  }
+
+  function showThanks() {
+    $('formCard').classList.add('hidden');
+    $('thanksCard').classList.remove('hidden');
+  }
+
+  $('form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const topics = [...document.querySelectorAll('input[name=topic]:checked')].map(i => i.value);
+    const note = $('note').value.trim();
+    const msg = $('msg');
+    msg.className = 'msg';
+    if (!topics.length && !note) {
+      msg.className = 'msg err';
+      msg.textContent = 'Lütfen en az bir konu seçin ya da bir öneri yazın.';
+      return;
+    }
+    const btn = $('submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" aria-hidden="true"></span> Gönderiliyor…';
+    try {
+      const r = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ topics, note })
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error('not ok');
+      try { localStorage.setItem(VOTED_KEY, '1'); } catch (e) {}
+      showThanks();
+      renderResults(j.results);
+      $('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = 'Oyunuz gönderilemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.';
+      btn.disabled = false;
+      btn.textContent = 'Oyumu gönder';
+    }
+  });
+
+  $('refresh').addEventListener('click', loadResults);
+
+  try { if (localStorage.getItem(VOTED_KEY)) showThanks(); } catch (e) {}
+  loadResults();
+</script>
+</body>
+</html>
