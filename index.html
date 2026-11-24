@@ -260,7 +260,6 @@
       showThanks();
       saveCache(j.results);
       renderResults(j.results);
-      $('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
       msg.className = 'msg err';
       msg.textContent = 'Oyunuz gönderilemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.';
@@ -280,10 +279,12 @@
     document.querySelector('header .lead').textContent = 'Bir sonraki toplantımızda konuşmak istediğiniz konular. Sonuçlar kendiliğinden güncellenir.';
     document.querySelector('#resultsCard h2').textContent = 'Şu ana kadarki oylar';
     setInterval(loadResults, 30000);
+    loadResults();
   } else {
+    // anket sayfasında sonuçlar gösterilmez; yalnız ?sonuclar linkinde
+    $('resultsCard').classList.add('hidden');
     try { if (localStorage.getItem(VOTED_KEY)) showThanks(); } catch (e) {}
   }
-  loadResults();
 </script>
 </body>
 </html>
