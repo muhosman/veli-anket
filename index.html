@@ -140,6 +140,7 @@
     'Oyunun gelişimdeki önemi'
   ];
   const VOTED_KEY = 'veli-anket-oy-verildi';
+  const RESULTS_ONLY = new URLSearchParams(location.search).has('sonuclar');
   const $ = (id) => document.getElementById(id);
   const check = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" stroke="#FFF8EF" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -165,7 +166,7 @@
     bars.textContent = '';
     if (!res || !res.counts) { $('total').textContent = 'Sonuçlar şu anda gösterilemiyor.'; return; }
     const total = res.total || 0;
-    $('total').textContent = total === 0 ? 'Henüz oy yok. İlk oyu siz verin!' : total + ' veli oy verdi.';
+    $('total').textContent = total === 0 ? (RESULTS_ONLY ? 'Henüz oy yok.' : 'Henüz oy yok. İlk oyu siz verin!') : total + ' veli oy verdi.';
     const entries = TOPICS.map(t => [t, res.counts[t] || 0]).sort((a, b) => b[1] - a[1]);
     const max = Math.max(1, ...entries.map(e => e[1]));
     entries.forEach(([t, n], idx) => {
@@ -186,15 +187,44 @@
     });
   }
 
-  async function loadResults() {
-    $('refresh').disabled = true;
+  const CACHE_KEY = 'veli-anket-sonuclar';
+  function saveCache(res) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(res)); } catch (e) {} }
+  function showCached() {
+    try { const c = JSON.parse(localStorage.getItem(CACHE_KEY)); if (c && c.counts) { renderResults(c); return true; } } catch (e) {}
+    return false;
+  }
+
+  async function fetchResults(timeoutMs) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
     try {
-      const r = await fetch(ENDPOINT, { method: 'GET' });
+      const r = await fetch(ENDPOINT, { method: 'GET', signal: ctrl.signal });
       const j = await r.json();
-      renderResults(j.results);
+      if (!j || !j.results) throw new Error('bad');
+      return j.results;
+    } finally { clearTimeout(timer); }
+  }
+
+  let loading = false;
+  async function loadResults() {
+    if (loading) return;
+    loading = true;
+    $('refresh').disabled = true;
+    const hadCache = showCached();
+    const slow = setTimeout(() => {
+      if (!hadCache) $('total').textContent = 'Sonuçlar yükleniyor… Bu birkaç saniye sürebilir.';
+    }, 3000);
+    try {
+      let res;
+      try { res = await fetchResults(20000); }
+      catch (e) { res = await fetchResults(30000); } // bir kez daha dene
+      saveCache(res);
+      renderResults(res);
     } catch (e) {
-      $('total').textContent = 'Sonuçlar yüklenemedi. İnternet bağlantınızı kontrol edip tekrar deneyin.';
+      if (!hadCache) $('total').textContent = 'Sonuçlar şu anda yüklenemedi. "Sonuçları yenile" ile tekrar deneyin.';
     } finally {
+      clearTimeout(slow);
+      loading = false;
       $('refresh').disabled = false;
     }
   }
@@ -228,6 +258,7 @@
       if (!j.ok) throw new Error('not ok');
       try { localStorage.setItem(VOTED_KEY, '1'); } catch (e) {}
       showThanks();
+      saveCache(j.results);
       renderResults(j.results);
       $('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
@@ -240,7 +271,18 @@
 
   $('refresh').addEventListener('click', loadResults);
 
-  try { if (localStorage.getItem(VOTED_KEY)) showThanks(); } catch (e) {}
+  // ?sonuclar → yalnız sonuç sayfası (sunumda gösterilir, 30 sn'de bir kendini yeniler)
+  if (RESULTS_ONLY) {
+    document.title = 'Veli Toplantısı Konu Anketi · Sonuçlar';
+    $('formCard').classList.add('hidden');
+    $('thanksCard').classList.add('hidden');
+    document.querySelector('header h1').textContent = 'Anket sonuçları';
+    document.querySelector('header .lead').textContent = 'Bir sonraki toplantımızda konuşmak istediğiniz konular. Sonuçlar kendiliğinden güncellenir.';
+    document.querySelector('#resultsCard h2').textContent = 'Şu ana kadarki oylar';
+    setInterval(loadResults, 30000);
+  } else {
+    try { if (localStorage.getItem(VOTED_KEY)) showThanks(); } catch (e) {}
+  }
   loadResults();
 </script>
 </body>
